@@ -90,7 +90,7 @@ class Timer {
   void DoDecision();
 
   void RecordInventories(Agent* a);
-  void RecordInventory(Agent* a, std::string name, Material::Ptr m);
+  void RecordInventory(Agent* a, std::string name, Material::Ptr m, Resource::Ptr mats);
 
   /// decommissions all agents queued for the current timestep.
   void DoDecom();

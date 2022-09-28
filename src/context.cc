@@ -25,6 +25,7 @@ SimInfo::SimInfo()
       branch_time(-1),
       explicit_inventory(false),
       explicit_inventory_compact(false),
+      explicit_inventory_resources(false),
       parent_sim(boost::uuids::nil_uuid()),
       parent_type("init") {}
 
@@ -38,6 +39,7 @@ SimInfo::SimInfo(int dur, int y0, int m0, std::string handle)
       handle(handle),
       explicit_inventory(false),
       explicit_inventory_compact(false),
+      explicit_inventory_resources(false),
       parent_sim(boost::uuids::nil_uuid()),
       parent_type("init") {}
 
@@ -51,6 +53,7 @@ SimInfo::SimInfo(int dur, int y0, int m0, std::string handle, std::string d)
       handle(handle),
       explicit_inventory(false),
       explicit_inventory_compact(false),
+      explicit_inventory_resources(false),
       parent_sim(boost::uuids::nil_uuid()),
       parent_type("init") {}
 
@@ -67,6 +70,7 @@ SimInfo::SimInfo(int dur, boost::uuids::uuid parent_sim,
       branch_time(branch_time),
       explicit_inventory(false),
       explicit_inventory_compact(false),
+      explicit_inventory_resources(false),
       handle(handle) {}
 
 Context::Context(Timer* ti, Recorder* rec)
@@ -203,6 +207,7 @@ void Context::InitSim(SimInfo si) {
   NewDatum("InfoExplicitInv")
       ->AddVal("RecordInventory", si.explicit_inventory)
       ->AddVal("RecordInventoryCompact", si.explicit_inventory_compact)
+      ->AddVal("RecordInventoryResources", si.explicit_inventory_resources)
       ->Record();
 
   // TODO: when the backends get uint64_t support, the static_cast here should

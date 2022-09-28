@@ -167,6 +167,7 @@ void SimInit::LoadInfo() {
   qr = b_->Query("InfoExplicitInv", NULL);
   si_.explicit_inventory = qr.GetVal<bool>("RecordInventory");
   si_.explicit_inventory_compact = qr.GetVal<bool>("RecordInventoryCompact");
+  si_.explicit_inventory_resources = qr.GetVal<bool>("RecordInventoryResources");
 
   ctx_->InitSim(si_);
 }

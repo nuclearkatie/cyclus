@@ -97,7 +97,7 @@ void Timer::DoTock() {
     agent->second->Tock();
   }
 
-  if (si_.explicit_inventory || si_.explicit_inventory_compact) {
+  if (si_.explicit_inventory || si_.explicit_inventory_compact || si_.explicit_inventory_resources) {
     std::set<Agent*> ags = ctx_->agent_list_;
     std::set<Agent*>::iterator it;
     for (it = ags.begin(); it != ags.end(); ++it) {
@@ -132,11 +132,11 @@ void Timer::RecordInventories(Agent* a) {
     for (int i = 1; i < mats.size(); i++) {
       m->Absorb(ResCast<Material>(mats[i]->Clone()));
     }
-    RecordInventory(a, name, m);
+    RecordInventory(a, name, m, mats);
   }
 }
 
-void Timer::RecordInventory(Agent* a, std::string name, Material::Ptr m) {
+void Timer::RecordInventory(Agent* a, std::string name, Material::Ptr m, Resource::Ptr mats) {
   if (si_.explicit_inventory) {
     CompMap c = m->comp()->mass();
     compmath::Normalize(&c, m->quantity());
@@ -164,6 +164,14 @@ void Timer::RecordInventory(Agent* a, std::string name, Material::Ptr m) {
         ->AddVal("Units", m->units())
         ->AddVal("Composition", c)
         ->Record();
+  }
+
+  if (si_.explicit_inventory_resources) {
+    ctx_->NewDatum("ExplicitInventoryResources")
+      ->AddVal("AgentId", a->id())
+      ->AddVal("Time", time_)
+      ->AddVal("InventoryName", name)
+      ->Record();
   }
 }
 

@@ -29,6 +29,9 @@ datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
         <element name="explicit_inventory_compact"> <data type="boolean"/> </element>
       </optional>
       <optional>
+        <element name="explicit_inventory_resources"> <data type="boolean"/> </element>
+      </optional>
+      <optional>
           <element name="tolerance_generic"><data type="double"/></element>
       </optional>
       <optional>

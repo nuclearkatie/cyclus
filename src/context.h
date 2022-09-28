@@ -114,6 +114,10 @@ class SimInfo {
   /// every time step in a table (i.e. agent ID, Time, Quantity,
   /// Composition-object and/or reference).
   bool explicit_inventory_compact;
+
+  /// True if per-agent resource inventories should be explicitly queried/
+  /// recorded every time step in a table
+  bool explicit_inventory_resources;
 };
 
 /// A simulation context provides access to necessary simulation-global

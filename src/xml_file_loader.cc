@@ -439,6 +439,7 @@ void XMLFileLoader::LoadControlParams() {
 
   si.explicit_inventory = OptionalQuery<bool>(qe, "explicit_inventory", false);
   si.explicit_inventory_compact = OptionalQuery<bool>(qe, "explicit_inventory_compact", false);
+  si.explicit_inventory_resources = OptionalQuery<bool>(qe, "explicit_inventory_resources", false);
 
   // get time step duration
   si.dt = OptionalQuery<int>(qe, "dt", kDefaultTimeStepDur);
