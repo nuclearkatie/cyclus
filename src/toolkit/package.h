@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "material.h"
-
 namespace cyclus {
 namespace toolkit {
 
@@ -14,15 +12,17 @@ namespace toolkit {
 /// Packaging for a material
 class Package {
     public:
-        /// Default constructor
+        /// default constructor
         Package ();
 
-        // Constructor with package id
+        /// constructor
+        /// @param package_id the package id
         Package (std::string package_id);
 
-        /// Default destructor for Package
+        /// destructor
         ~Package();
 
+        /// change the package_id 
         void set_package_id(std::string package_id);
 
     private:
