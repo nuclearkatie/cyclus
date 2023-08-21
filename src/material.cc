@@ -223,7 +223,8 @@ Material::Material(Context* ctx, double quantity, Composition::Ptr c)
       comp_(c),
       tracker_(ctx, this),
       ctx_(ctx),
-      prev_decay_time_(0) {
+      prev_decay_time_(0)
+      package_id_("") {
   if (ctx != NULL) {
     prev_decay_time_ = ctx->time();
   } else {

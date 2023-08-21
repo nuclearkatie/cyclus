@@ -8,6 +8,7 @@
 #include "cyc_limits.h"
 #include "resource.h"
 #include "res_tracker.h"
+#include "toolkit/package.h"
 
 namespace cyclus {
 
@@ -162,6 +163,7 @@ class Material: public Resource {
   Composition::Ptr comp_;
   int prev_decay_time_;
   ResTracker tracker_;
+  Package package_id_;
 };
 
 /// Creates and returns a new material with the specified quantity and a
