@@ -4,17 +4,15 @@
 namespace cyclus {
 namespace toolkit {
 
+int Package::next_package_id_ = 1;
+
 Package::Package() {
-    package_id_ = "";
+    package_type_ = "";
 }
 
-Package::Package(std::string package_id) : package_id_(package_id) {}
+Package::Package(PackageType package_type) : package_type_(package_type) {}
 
 Package::~Package() {}
-
-void Package::set_package_id(std::string package_id) {
-    package_id_ = package_id;
-}
 
 }  // namespace toolkit
 }  // namespace cyclus
