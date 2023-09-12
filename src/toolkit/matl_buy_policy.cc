@@ -72,12 +72,12 @@ MatlBuyPolicy& MatlBuyPolicy::Init(Agent* manager, ResBuf<Material>* buf,
 
 MatlBuyPolicy& MatlBuyPolicy::Init(Agent* manager, ResBuf<Material>* buf,
                                    std::string name,
-                                   double fill_to, double req_when_under) {
+                                   double req_when_under, double fill_to) {
   Trader::manager_ = manager;
   buf_ = buf;
   name_ = name;
-  set_fill_to(fill_to);
   set_req_when_under(req_when_under);
+  set_fill_to(fill_to);
   return *this;
 }
 
