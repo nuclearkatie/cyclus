@@ -32,14 +32,14 @@ MatlBuyPolicy::~MatlBuyPolicy() {
 void MatlBuyPolicy::set_fill_to(double x) {
   if (x > 1)
     x /= buf_->capacity();
-  assert(x > 0 && x <= 1.);
+  assert(x >= 0 && x <= 1.);
   fill_to_ = x;
 }
 
 void MatlBuyPolicy::set_req_when_under(double x) {
   if (x > 1)
     x /= buf_->capacity();
-  assert(x > 0 && x <= 1.);
+  assert(x >= 0 && x <= 1.);
   req_when_under_ = x;
 }
 
