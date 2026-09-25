@@ -230,6 +230,51 @@ TEST_F(ProductBufTest, PopBack) {
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+TEST_F(ProductBufTest, PeekAll) {
+  // empty buffer gives an empty vector rather than throwing
+  EXPECT_TRUE(store_.PeekAll().empty());
+
+  // filled buffer gives every object, oldest first, and removes nothing
+  ProdVec peeked = filled_store_.PeekAll();
+  ASSERT_EQ(peeked.size(), 2);
+  EXPECT_EQ(peeked[0], mat1_);
+  EXPECT_EQ(peeked[1], mat2_);
+  EXPECT_EQ(filled_store_.count(), 2);
+  EXPECT_DOUBLE_EQ(filled_store_.quantity(), mass1 + mass2);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+TEST_F(ProductBufTest, PopSpecific) {
+  Product::Ptr extra = Product::CreateUntracked(5, "bananas");
+  filled_store_.capacity(cap + 5);  // fixture leaves only 1 unit of space
+  filled_store_.Push(extra);  // buffer is now mat1_, mat2_, extra
+
+  // pop from the middle: the returned object is the same (unsplit) object
+  Product::Ptr mat;
+  ASSERT_NO_THROW(mat = filled_store_.PopSpecific(mat2_));
+  EXPECT_EQ(mat, mat2_);
+  EXPECT_DOUBLE_EQ(mat->quantity(), mass2);
+  EXPECT_EQ(filled_store_.count(), 2);
+  EXPECT_DOUBLE_EQ(filled_store_.quantity(), mass1 + 5);
+
+  // remaining objects keep their order
+  ProdVec left = filled_store_.PeekAll();
+  ASSERT_EQ(left.size(), 2);
+  EXPECT_EQ(left[0], mat1_);
+  EXPECT_EQ(left[1], extra);
+
+  // an object that is no longer (or never was) in the buffer throws
+  EXPECT_THROW(filled_store_.PopSpecific(mat2_), KeyError);
+  EXPECT_THROW(store_.PopSpecific(mat1_), KeyError);
+
+  // popping the rest empties the buffer
+  filled_store_.PopSpecific(extra);
+  filled_store_.PopSpecific(mat1_);
+  EXPECT_EQ(filled_store_.count(), 0);
+  EXPECT_DOUBLE_EQ(filled_store_.quantity(), 0.0);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - Pushing into buffer - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TEST_F(ProductBufTest, Push_Empty) {
@@ -455,6 +500,21 @@ TEST_F(MaterialBufTest, ChangeKeepPackaging) {
 
 TEST_F(MaterialBufTest, BulkKeepPackaging) {
   EXPECT_THROW(ResBuf<Material>(true, true), ValueError);
+}
+
+TEST_F(MaterialBufTest, IsBulk) {
+  EXPECT_FALSE(mat_store_.is_bulk());
+  EXPECT_TRUE(bulk_store_.is_bulk());
+  EXPECT_FALSE(keep_pkg_store_.is_bulk());
+}
+
+TEST_F(MaterialBufTest, PopSpecificKeepsPackaging) {
+  keep_pkg_store_.Push(mat1a_);
+  keep_pkg_store_.Push(mat4_pkgd_);
+  Material::Ptr m = keep_pkg_store_.PopSpecific(mat4_pkgd_);
+  EXPECT_EQ(m, mat4_pkgd_);
+  EXPECT_EQ(m->package_name(), pkg_name_);
+  EXPECT_EQ(keep_pkg_store_.count(), 1);
 }
 
 

@@ -8,6 +8,8 @@ Since last release
 **Added:**
 * Added concurrency groups to the build, MacOS build, and code coverage workflows so that a new push cancels superseded in-progress runs (#1984)
 * Added a Pixi workspace (``pixi.toml``, ``pixi.lock``) for development on Linux and MacOS (#1984)
+* Added a discrete trading mode to ``MatlSellPolicy`` that bids and trades each resource object whole, as an exclusive bid of its own quantity, oldest first; objects that do not fit a request are skipped. Packaged objects in a buffer that keeps packaging are traded in their existing package
+* Added ``ResBuf::PeekAll``, ``ResBuf::PopSpecific`` and ``ResBuf::is_bulk``
 * Added a boolean-specific Query function to infile_tree.h to support archetype bools using true and false (#1970)
 * Added a copy constructor to Timer to allow MockSim to copy it without upsetting the progress bar (#1961)
 * Added progress bar to the simulation loop (#1912)

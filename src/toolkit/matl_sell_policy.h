@@ -1,7 +1,9 @@
 #ifndef CYCLUS_SRC_TOOLKIT_MATL_SELL_POLICY_H_
 #define CYCLUS_SRC_TOOLKIT_MATL_SELL_POLICY_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "composition.h"
 #include "material.h"
@@ -74,6 +76,17 @@ class MatlSellPolicy : public Trader {
   /// @param quantize If quantize is greater than zero, the policy will make
   /// exclusive, integral quantize kg bids. Otherwise, single bids will
   /// be sent matching the requested quantity.
+  /// @param package_name the package that traded material is packaged into
+  /// @param transport_unit_name the transport unit that restricts how many
+  /// packages can be shipped
+  /// @param discrete If true, resource objects in buf are traded whole: each
+  /// object is offered as its own exclusive bid of exactly its quantity, and
+  /// the traded object is the buffer's original object (never split or
+  /// combined). Objects are offered oldest first; an object that does not
+  /// fit in the remaining request (or throughput) is skipped and newer
+  /// objects are considered. If buf keeps packaging, packaged objects are
+  /// traded in their existing package. Cannot be combined with quantize or
+  /// used with a bulk buffer.
   /// @{
   MatlSellPolicy& Init(Agent* manager, ResBuf<Material>* buf, std::string name);
   MatlSellPolicy& Init(Agent* manager, ResBuf<Material>* buf, std::string name,
@@ -86,7 +99,8 @@ class MatlSellPolicy : public Trader {
       Agent* manager, ResBuf<Material>* buf, std::string name,
       double throughput, bool ignore_comp, double quantize,
       std::string package_name = Package::unpackaged_name(),
-      std::string transport_unit_name = TransportUnit::unrestricted_name());
+      std::string transport_unit_name = TransportUnit::unrestricted_name(),
+      bool discrete = false);
   /// @}
 
   /// Instructs the policy to empty its buffer with offers on the given
@@ -112,7 +126,10 @@ class MatlSellPolicy : public Trader {
   double Limit() const;
 
   /// whether trades will be denoted as exclusive or not
-  inline bool Excl() const { return quantize_ > 0; }
+  inline bool Excl() const { return quantize_ > 0 || discrete_; }
+
+  /// whether resource objects are traded whole (see Init)
+  inline bool Discrete() const { return discrete_; }
 
   /// Trader Methods
   /// @{
@@ -129,6 +146,27 @@ class MatlSellPolicy : public Trader {
   void set_ignore_comp(bool x);
   void set_package(std::string x);
   void set_transport_unit(std::string x);
+  void set_discrete(bool x);
+
+  /// Discrete mode: the objects in the buffer that can be sold this time
+  /// step, oldest first, skipping any object that would push the running
+  /// total over the throughput or that cannot be shipped in package_.
+  std::vector<Material::Ptr> DiscreteSellable() const;
+
+  /// Discrete mode: whether obj can be traded whole. True if the buffer keeps
+  /// packaging and obj is already packaged (it ships in its own package), if
+  /// no sell package is set, or if obj fits in a single package_.
+  bool DiscreteFits(Material::Ptr obj) const;
+
+  /// Discrete mode: bids for each request, one BidPortfolio per object.
+  std::set<BidPortfolio<Material>::Ptr> GetDiscreteBids(
+      CommodMap<Material>::type& commod_requests);
+
+  /// Discrete mode: responds to each trade with the original buffer object
+  /// that its bid offered.
+  void GetDiscreteTrades(
+      const std::vector<Trade<Material>>& trades,
+      std::vector<std::pair<Trade<Material>, Material::Ptr>>& responses);
 
   ResBuf<Material>* buf_;
   std::set<std::string> commods_;
@@ -136,8 +174,13 @@ class MatlSellPolicy : public Trader {
   double throughput_;
   std::string name_;
   bool ignore_comp_;
+  bool discrete_;
   Package::Ptr package_;
   TransportUnit::Ptr transport_unit_;
+
+  /// Discrete mode: maps each offer made in GetMatlBids to the buffer object
+  /// it represents, so GetMatlTrades can hand over that exact object.
+  std::map<Material::Ptr, Material::Ptr> offer_to_obj_;
 };
 
 }  // namespace toolkit

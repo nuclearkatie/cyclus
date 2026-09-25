@@ -104,6 +104,10 @@ template <class T> class ResBuf {
 
   bool keep_packaging() const { return keep_packaging_; }
 
+  /// Returns true if this is a bulk buffer, i.e. pushed resources are
+  /// absorbed into a single resource object rather than stored separately.
+  bool is_bulk() const { return is_bulk_; }
+
   /// Returns the total number of constituent resource objects
   /// in the buffer. Never throws.
   inline int count() const { return rs_.size(); }
@@ -225,6 +229,31 @@ template <class T> class ResBuf {
       throw ValueError("cannot peek at resource from an empty buff");
     }
     return rs_.front();
+  }
+
+  /// Returns every resource object in the buffer, in the order they would be
+  /// popped (i.e. oldest first), without removing them from the buffer.
+  /// Returns an empty vector if the buffer is empty. Never throws.
+  std::vector<typename T::Ptr> PeekAll() const {
+    return std::vector<typename T::Ptr>(rs_.begin(), rs_.end());
+  }
+
+  /// Pops a specific resource object from the buffer, regardless of its
+  /// position. The resource is not split, and the order of the remaining
+  /// resources is unchanged.
+  ///
+  /// @param r the resource object to remove (e.g. one obtained from PeekAll)
+  /// @throws KeyError the resource is not in the buffer.
+  typename T::Ptr PopSpecific(typename T::Ptr r) {
+    if (rs_present_.count(r) == 0) {
+      throw KeyError("cannot pop a resource that is not in the buffer");
+    }
+
+    rs_.remove(r);
+    rs_present_.erase(r);
+    qty_ -= r->quantity();
+    UpdateQty();
+    return r;
   }
 
   /// Pops one resource object from the buffer.
