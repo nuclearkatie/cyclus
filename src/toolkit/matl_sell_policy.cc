@@ -92,13 +92,12 @@ void MatlSellPolicy::set_transport_unit(std::string x) {
 
 void MatlSellPolicy::set_discrete(bool x) {
   if (x && quantize_ > 0) {
-    throw ValueError("Discrete trading cannot be combined with quantize: "
-                     "discrete bids are sized by each resource object, not "
-                     "by a fixed quantity.");
+    throw ValueError("Discrete trading cannot be used with quantize. Bid "
+                     "sizes are determined by each resource and are "
+                     "unmodified.");
   }
   if (x && buf_ != NULL && buf_->is_bulk()) {
-    throw ValueError("Discrete trading requires a non-bulk buffer: a bulk "
-                     "buffer merges resources into a single object.");
+    throw ValueError("Discrete trading is incompatible with a bulk buffer.");
   }
   discrete_ = x;
 }
@@ -183,7 +182,7 @@ void MatlSellPolicy::Stop() {
 
 double MatlSellPolicy::Limit() const {
   if (discrete_) {
-    // only whole objects can be sold, so the limit is their sum
+    // total sellable is the sum of all sellable objects
     double total = 0;
     std::vector<Material::Ptr> objs = DiscreteSellable();
     for (int i = 0; i < objs.size(); ++i) {
@@ -330,16 +329,17 @@ void MatlSellPolicy::GetMatlTrades(
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 bool MatlSellPolicy::DiscreteFits(Material::Ptr obj) const {
-  // already packaged and the buffer preserves it: ship in its own package
+  // if packaged, preserve packaging
   if (buf_->keep_packaging() &&
       obj->package_name() != Package::unpackaged_name()) {
     return true;
   }
-  // no sell package: any object can be shipped as-is
+  // if no sell package, sell as-is (i.e. it fits)
   if (package_->name() == Package::unpackaged_name()) {
     return true;
   }
-  // otherwise the whole object must fit in exactly one sell package
+  // if unpackaged but there is a sell package, the whole object must fit in
+  // one package or it can never be sold
   double q = obj->quantity();
   return (q - package_->fill_min() > -eps_rsrc()) &&
          (q - package_->fill_max() < eps_rsrc());
